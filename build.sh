@@ -94,7 +94,7 @@ fi
 
 # select cpu threads
 CORES=$(grep -c "processor" /proc/cpuinfo)
-THREADS=$((CORES + 2))
+THREADS=$((CORES + 4))
 
 # get build date, month day year
 BDATE=$(LC_ALL='en_US.utf8' date '+%b %d %Y')
@@ -116,9 +116,9 @@ ABORT() {
 export CONFIG_NO_ERROR_ON_MISMATCH=y
 export ARCH=arm64
 export KBUILD_COMPILER_STRING=$GCC_VER
-export KBUILD_BUILD_TIMESTAMP=$BDATE
-export KBUILD_BUILD_USER=w0lf
-export KBUILD_BUILD_HOST=github
+#export KBUILD_BUILD_TIMESTAMP=$BDATE
+#export KBUILD_BUILD_USER=w0lf
+#export KBUILD_BUILD_HOST=MEMEmachine
 export MAKE_MK="Marshall ${VER}"
 if [ "$USE_CCACHE" = "yes" ]; then
   export CROSS_COMPILE="ccache $GCC_COMP"
