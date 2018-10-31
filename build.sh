@@ -100,7 +100,7 @@ THREADS=$((CORES + 4))
 BDATE=$(LC_ALL='en_US.utf8' date '+%b %d %Y')
 
 # directory containing cross-compiler
-GCC_COMP=/home/michael/kernel/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+GCC_COMP=/home/michael/ubertc/out/aarch64-linux-android-6.x/bin/aarch64-linux-android-
 
 # compiler version
 GCC_VER="$(${GCC_COMP}gcc --version | head -n 1 | cut -f1 -d'~' | \
