@@ -83,7 +83,7 @@
 
 //add_to_scale
 #define TCP_RMEM_SCALE 4
-int sysctl_tcp_timestamps __read_mostly = 1;
+int sysctl_tcp_timestamps __read_mostly;
 int sysctl_tcp_window_scaling __read_mostly = 1;
 int sysctl_tcp_sack __read_mostly;
 int sysctl_tcp_fack __read_mostly;
