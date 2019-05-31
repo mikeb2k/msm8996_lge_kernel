@@ -99,6 +99,10 @@
 #define BLANK_FLAG_ULP	FB_BLANK_NORMAL
 #endif
 
+#ifdef CONFIG_KLAPSE
+#include <linux/klapse.h>
+#endif
+
 /*
  * Time period for fps calulation in micro seconds.
  * Default value is set to 1 sec.
@@ -406,6 +410,9 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 #if defined(CONFIG_LGE_DISPLAY_AOD_SUPPORTED)
 		if( mfd->panel_info->aod_cur_mode == AOD_PANEL_MODE_U3_UNBLANK )
 			mfd->bl_isU3_mode = 1;
+#endif
+#ifdef CONFIG_KLAPSE
+		set_rgb_slider(bl_lvl);
 #endif
 		mutex_unlock(&mfd->bl_lock);
 	}
