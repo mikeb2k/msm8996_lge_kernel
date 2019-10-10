@@ -27,6 +27,10 @@
 #include <linux/regulator/of_regulator.h>
 #include <linux/qpnp/qpnp-revid.h>
 
+#ifdef CONFIG_LGE_DISPLAY_LABIBB_RECOVERY
+#include <linux/qpnp/power-on.h>
+#endif
+
 #ifdef CONFIG_LGE_LCD_POWER_CTRL
 #include <soc/qcom/lge/board_lge.h>
 #endif
@@ -1459,6 +1463,12 @@ static int qpnp_labibb_regulator_enable(struct qpnp_labibb *labibb)
 	return 0;
 err_out:
 	rc = qpnp_ibb_set_mode(labibb, IBB_SW_CONTROL_DIS);
+
+#ifdef CONFIG_LGE_DISPLAY_LABIBB_RECOVERY
+	pr_err("[Display] Issue happened in warm reset. Need cold reset.\n");
+	mdelay(10000);
+	do_msm_hard_reset();
+#endif
 	if (rc) {
 		pr_err("Unable to set IBB_MODULE_EN rc = %d\n", rc);
 		return rc;
@@ -1620,7 +1630,6 @@ static int qpnp_labibb_regulator_ttw(struct qpnp_labibb *labibb, unsigned int mo
 	return 0;
 }
 
-#if defined(CONFIG_LGE_DISPLAY_LUCYE_COMMON)
 static int qpnp_labibb_pulldown(struct qpnp_labibb *labibb, unsigned int mode)
 {
 	int rc;
@@ -1672,7 +1681,6 @@ static int qpnp_labibb_pulldown(struct qpnp_labibb *labibb, unsigned int mode)
 
 	return 0;
 }
-#endif
 #endif
 
 static int qpnp_lab_regulator_enable(struct regulator_dev *rdev)
@@ -1921,13 +1929,11 @@ static int qpnp_lab_regulator_setmode(struct regulator_dev *rdev, unsigned int m
 		if (!labibb->standalone)
 			return qpnp_labibb_regulator_ttw(labibb, mode);
 	break;
-#if defined(CONFIG_LGE_DISPLAY_LUCYE_COMMON)
 	case REGULATOR_MODE_ENABLE_PULLDOWN:
 	case REGULATOR_MODE_DISABLE_PULLDOWN:
 		if (!labibb->standalone)
 			return qpnp_labibb_pulldown(labibb, mode);
 	break;
-#endif
 	default:
 		pr_err("%s: unknown mode %x\n", __func__, mode);
 		rc = -EINVAL;
@@ -2130,6 +2136,9 @@ static int register_qpnp_lab_regulator(struct qpnp_labibb *labibb,
 				rc);
 			return rc;
 		}
+#ifdef CONFIG_LGE_DISPLAY_LABIBB_RECOVERY
+		pr_err("[Display] LABIBB is not enabled in LK!!\n");
+#endif
 	} else {
 		rc = qpnp_labibb_read(labibb, &val,
 			labibb->lab_base + REG_LAB_LCD_AMOLED_SEL, 1);

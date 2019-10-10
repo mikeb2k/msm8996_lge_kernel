@@ -35,10 +35,6 @@ struct mutex ecryptfs_daemon_hash_mux;
 static int ecryptfs_hash_bits;
 #define ecryptfs_current_euid_hash(uid) \
 	hash_long((unsigned long)from_kuid(&init_user_ns, current_euid()), ecryptfs_hash_bits)
-#ifdef CONFIG_SDP
-#define ecryptfs_sdp_euid_hash(uid) \
-	hash_long((unsigned long)from_kuid(&init_user_ns, KUIDT_INIT(1000)), ecryptfs_hash_bits)
-#endif
 
 static u32 ecryptfs_msg_counter;
 static struct ecryptfs_msg_ctx *ecryptfs_msg_ctx_arr;
@@ -122,17 +118,9 @@ int ecryptfs_find_daemon_by_euid(struct ecryptfs_daemon **daemon)
 	int rc;
 
 	hlist_for_each_entry(*daemon,
-#ifndef CONFIG_SDP
 				&ecryptfs_daemon_hash[ecryptfs_current_euid_hash()],
-#else
-				&ecryptfs_daemon_hash[ecryptfs_sdp_euid_hash()],
-#endif
 				euid_chain) {
-#ifndef CONFIG_SDP
 		if (uid_eq((*daemon)->file->f_cred->euid, current_euid())) {
-#else
-		if (uid_eq((*daemon)->file->f_cred->euid, KUIDT_INIT(1000))) {
-#endif
 			rc = 0;
 			goto out;
 		}

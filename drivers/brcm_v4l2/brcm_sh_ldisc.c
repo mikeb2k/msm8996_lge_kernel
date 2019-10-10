@@ -112,6 +112,9 @@ typedef struct {
 #define HCI_V4L2_TYPE_SCO_DATA        3
 #define HCI_V4L2_TYPE_EVENT           4
 #define HCI_V4L2_TYPE_FM_CMD          8
+//BT_S : [CONBT-5457] Handling of tty null exceptions
+#define VERIFY_TTY TRUE
+//BT_E : [CONBT-5457] Handling of tty null exceptions
 
 /* struct to parse vendor params */
 typedef int (conf_action_t)(char *p_conf_name, char *p_conf_value);
@@ -450,7 +453,12 @@ static int brcm_hci_write(struct hci_uart *hu, const unsigned char* data,
             BT_LDISC_DBG(V4L2_DBG_TX, "writing to tty->write and snoop tx during"\
                 "download patchram");
             spin_lock_irqsave(&hu->hcisnoop_write_lock, flags);
-            len = hu->tty->ops->write(hu->tty, data, count);
+//BT_S : [CONBT-5457] Handling of tty null exceptions
+#if defined(VERIFY_TTY) && (VERIFY_TTY == TRUE)
+            if(hu->tty != NULL)
+#endif
+//BT_E : [CONBT-5457] Handling of tty null exceptions
+             len = hu->tty->ops->write(hu->tty, data, count);
             spin_unlock_irqrestore(&hu->hcisnoop_write_lock, flags);
         }
         else
@@ -498,7 +506,12 @@ static int brcm_hci_write(struct hci_uart *hu, const unsigned char* data,
     else
 #endif
     {
-        len = hu->tty->ops->write(hu->tty, data, count);
+//BT_S : [CONBT-5457] Handling of tty null exceptions
+#if defined(VERIFY_TTY) && (VERIFY_TTY == TRUE)
+        if (hu->tty != NULL)
+#endif
+         len = hu->tty->ops->write(hu->tty, data, count);
+//BT_E : [CONBT-5457] Handling of tty null exceptions
     }
     return len;
 
@@ -1524,6 +1537,11 @@ static long download_patchram(struct hci_uart *hu)
         err = -ENOMEM;
         goto error_state;
     }
+//BT_S : [CONBT-5457] Handling of tty null exceptions
+#if defined(VERIFY_TTY) && (VERIFY_TTY == TRUE)
+    if(tty != NULL)
+#endif
+//BT_E : [CONBT-5457] Handling of tty null exceptions
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
     memcpy(&ktermios, tty->termios, sizeof(ktermios));
 #else
@@ -1613,6 +1631,11 @@ static long download_patchram(struct hci_uart *hu)
         release_firmware(hu->fw_entry);
 
         /* set baud rate to default */
+//BT_S : [CONBT-5457] Handling of tty null exceptions
+#if defined(VERIFY_TTY) && (VERIFY_TTY == TRUE)
+        if(tty != NULL)
+#endif
+//BT_E : [CONBT-5457] Handling of tty null exceptions
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
         memcpy(&ktermios, tty->termios, sizeof(ktermios));
 #else

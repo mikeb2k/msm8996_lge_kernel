@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -497,6 +497,20 @@ static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
 
 	mdelay(10000);
 }
+
+#ifdef CONFIG_LGE_DISPLAY_LABIBB_RECOVERY
+void do_msm_hard_reset(void)
+{
+	pr_notice("Going down for restart now by hard reset\n");
+	qpnp_pon_system_pwr_off(PON_POWER_OFF_HARD_RESET);
+	scm_disable_sdi();
+	halt_spmi_pmic_arbiter();
+	deassert_ps_hold();
+
+	mdelay(10000);
+}
+EXPORT_SYMBOL(do_msm_hard_reset);
+#endif
 
 static void do_msm_poweroff(void)
 {

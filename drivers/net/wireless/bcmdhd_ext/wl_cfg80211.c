@@ -11981,6 +11981,27 @@ static s32 wl_get_assoc_ies(struct bcm_cfg80211 *cfg, struct net_device *ndev)
 	assoc_info.req_len = htod32(assoc_info.req_len);
 	assoc_info.resp_len = htod32(assoc_info.resp_len);
 	assoc_info.flags = htod32(assoc_info.flags);
+
+	if (assoc_info.req_len > (MAX_REQ_LINE + sizeof(struct dot11_assoc_req) +
+		((assoc_info.flags & WLC_ASSOC_REQ_IS_REASSOC) ? ETHER_ADDR_LEN : 0))) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+	if ((assoc_info.req_len > 0) &&
+		(assoc_info.req_len < (sizeof(struct dot11_assoc_req) +
+			((assoc_info.flags & WLC_ASSOC_REQ_IS_REASSOC) ? ETHER_ADDR_LEN : 0)))) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+	if (assoc_info.resp_len > (MAX_REQ_LINE + sizeof(struct dot11_assoc_resp))) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+	if ((assoc_info.resp_len > 0) && (assoc_info.resp_len < sizeof(struct dot11_assoc_resp))) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
 	if (conn_info->req_ie_len) {
 		conn_info->req_ie_len = 0;
 		bzero(conn_info->req_ie, sizeof(conn_info->req_ie));
@@ -11994,38 +12015,23 @@ static s32 wl_get_assoc_ies(struct bcm_cfg80211 *cfg, struct net_device *ndev)
 			WL_ASSOC_INFO_MAX, NULL);
 		if (unlikely(err)) {
 			WL_ERR(("could not get assoc req (%d)\n", err));
-			return err;
+			goto exit;
 		}
 		conn_info->req_ie_len = assoc_info.req_len - sizeof(struct dot11_assoc_req);
 		if (assoc_info.flags & WLC_ASSOC_REQ_IS_REASSOC) {
 			conn_info->req_ie_len -= ETHER_ADDR_LEN;
 		}
-		if (conn_info->req_ie_len <= MAX_REQ_LINE)
-			memcpy(conn_info->req_ie, cfg->extra_buf, conn_info->req_ie_len);
-		else {
-			WL_ERR(("IE size %d above max %d size \n",
-				conn_info->req_ie_len, MAX_REQ_LINE));
-			return err;
-		}
-	} else {
-		conn_info->req_ie_len = 0;
+		memcpy(conn_info->req_ie, cfg->extra_buf, conn_info->req_ie_len);
 	}
 	if (assoc_info.resp_len) {
 		err = wldev_iovar_getbuf(ndev, "assoc_resp_ies", NULL, 0, cfg->extra_buf,
 			WL_ASSOC_INFO_MAX, NULL);
 		if (unlikely(err)) {
 			WL_ERR(("could not get assoc resp (%d)\n", err));
-			return err;
+			goto exit;
 		}
-		conn_info->resp_ie_len = assoc_info.resp_len -sizeof(struct dot11_assoc_resp);
-		if (conn_info->resp_ie_len <= MAX_REQ_LINE) {
-			memcpy(conn_info->resp_ie, cfg->extra_buf, conn_info->resp_ie_len);
-		} else {
-			WL_ERR(("IE size %d above max %d size \n",
-				conn_info->resp_ie_len, MAX_REQ_LINE));
-			return err;
-		}
-
+		conn_info->resp_ie_len = assoc_info.resp_len - sizeof(struct dot11_assoc_resp);
+		memcpy(conn_info->resp_ie, cfg->extra_buf, conn_info->resp_ie_len);
 #ifdef QOS_MAP_SET
 		/* find qos map set ie */
 		if ((qos_map_ie = bcm_parse_tlvs(conn_info->resp_ie, conn_info->resp_ie_len,
@@ -12040,12 +12046,14 @@ static s32 wl_get_assoc_ies(struct bcm_cfg80211 *cfg, struct net_device *ndev)
 			cfg->up_table = NULL;
 		}
 #endif /* QOS_MAP_SET */
-	} else {
-		conn_info->resp_ie_len = 0;
 	}
-	WL_DBG(("req len (%d) resp len (%d)\n", conn_info->req_ie_len,
-		conn_info->resp_ie_len));
 
+exit:
+	if (err) {
+		WL_ERR(("err:%d, assoc_info-req:%u,resp:%u conn_info-req:%u,resp:%u\n",
+			err, assoc_info.req_len, assoc_info.resp_len,
+			conn_info->req_ie_len, conn_info->resp_ie_len));
+	}
 	return err;
 }
 
@@ -19886,53 +19894,5 @@ int wl_cfg80211_need_restrict_vsdb(struct net_device *dev)
 	}
 	return FALSE;
 }
-// 171113, kyungckt.chung@lge.com, Modify performance in Miracast/5G_MCC/BW_20M environment [E]
-// 171205, kyungckt.chung, Modify performance in Miracast/2.4G/Concurrent environment [S]
-int wl_cfg80211_need_increase_retry_limitation(struct net_device *dev)
-{
-	struct net_info *iter, *next;
-	struct net_device *p2p_ndev = NULL;
-	struct bcm_cfg80211 *cfg = g_bcm_cfg;
-	struct net_device *ndev = bcmcfg_to_prmry_ndev(cfg);
-	char *ifname_p2p = "p2p-wlan0-0";
-	u32 chspec;
-	int err;
-
-	/* Check concurrency situation */
-	if (!wl_get_drv_status(cfg, CONNECTED, ndev)) {
-		WL_INFORM(("%s: Not a concurrency situation\n", __FUNCTION__));
-		return FALSE;
-	}
-
-	/* Get CFG of P2P IF */
-	for_each_ndev(cfg, iter, next) {
-		if (iter->ndev) {
-			if (strcmp(iter->ndev->name, ifname_p2p) == 0) {
-				break;
-			}
-		}
-		WL_ERR(("%s: No P2P IF CFG Found\n", __FUNCTION__));
-		return FALSE;
-	}
-
-	p2p_ndev = iter->ndev;
-	if (!p2p_ndev) {
-		WL_ERR(("%s:p2p dev is NULL\n", __FUNCTION__));
-		return FALSE;
-	}
-
-	err = wldev_iovar_getint(p2p_ndev, "chanspec", &chspec);
-	if (unlikely(err)) {
-		WL_ERR(("%s: Get chanspec error (P2P) : %d \n", __FUNCTION__, err));
-		return FALSE;
-	}
-
-	if (CHSPEC_IS2G(chspec)) {
-		WL_INFORM(("%s: 2.4Ghz. Concurrent environment. Need to be increased!\n", __FUNCTION__));
-		return TRUE;
-	}
-	WL_INFORM(("%s: Not a 2.4G env. Doesn't need to be increased!\n", __FUNCTION__));
-	return FALSE;
-}
 #endif /* CUSTOMER_HW10 */
-// 171205, kyungckt.chung, Modify performance in Miracast/2.4G/Concurrent environment [E]
+// 171113, kyungckt.chung@lge.com, Modify performance in Miracast/5G_MCC/BW_20M environment [E]

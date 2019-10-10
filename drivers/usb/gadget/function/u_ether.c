@@ -1103,8 +1103,8 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 	struct usb_ep		*in = NULL;
 	u16			cdc_filter = 0;
 	bool			multi_pkt_xfer = false;
-	u32			fixed_in_len;
-	bool			is_fixed;
+	u32			fixed_in_len = 0;
+	bool			is_fixed = false;
 	struct skb_shared_hwtstamps hwtstamps;
 
 	spin_lock_irqsave(&dev->lock, flags);
@@ -1971,7 +1971,7 @@ int gether_get_host_addr_cdc(struct net_device *net, char *host_addr, int len)
 #ifdef CONFIG_LGE_USB_G_ANDROID
   snprintf(host_addr, len, "%pm", dev->host_mac);
 #else
-	snprintf(host_addr, len, "%pM", dev->host_mac);
+	snprintf(host_addr, len, "%pm", dev->host_mac);
 #endif
 
 	return strlen(host_addr);

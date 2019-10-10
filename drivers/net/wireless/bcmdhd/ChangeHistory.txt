@@ -1,4 +1,15 @@
 BCM43XX DHD 1.78 for N OS Release Note.
+
+DHD 1.78.18 - 2018.03.30
+Security Patch
+ - CS4757701: CVE-2017-13292. fix overflow in DHD CFG80211 wl_get_assoc_ies when handling assoc_info iovar results
+
+DHD 1.78.17 - 2017.12.28
+Security Patch
+ - CS4158886: CVE-2017-13221. fix buffer overrun in DHD wls_parse_batching_cmd
+              CVE-2017-13213. fix buffer overrun in DHD wl_cfgvendor_set_bssid_blacklist
+              NOTE: CVE-2017-13213 requires HAL change also. HAL updated is mandatory to apply CVE-2017-13213 in DHD
+
 DHD 1.78.16 - 2017.11.23
 Security Patch
  - CS4002429: CVE-2017-13161. fix buffer overrun in DHD wl_parse_ssid_list_tlv

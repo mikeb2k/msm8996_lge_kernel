@@ -660,7 +660,7 @@ int8    tunerbb_drv_fc8080_get_ber(struct broadcast_tdmb_sig_info *dmb_bb_info)
     uint16 protection_type;
 #endif
     uint16 avgBER;
-    uint8 refAntLevel;
+    uint8 refAntLevel = 0;
     int nation_info = 0;
     /* LGE_ADD_E, [hyun118.shin@lge.com], TDMB Antenna Leveling */
 

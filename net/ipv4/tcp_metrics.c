@@ -232,7 +232,7 @@ static struct tcp_metrics_block *__tcp_get_metrics_req(struct request_sock *req,
 	unsigned int hash;
 	struct net *net;
 
-// fix maybe-uninitialized error
+	// fix maybe-uninitialized error
 	memset(&saddr, 0, sizeof(struct inetpeer_addr));
 	memset(&daddr, 0, sizeof(struct inetpeer_addr));
 
@@ -275,9 +275,9 @@ static struct tcp_metrics_block *__tcp_get_metrics_tw(struct inet_timewait_sock 
 	unsigned int hash;
 	struct net *net;
 
-    // fix maybe-uninitialized error
-    memset(&saddr, 0, sizeof(struct inetpeer_addr));
-    memset(&daddr, 0, sizeof(struct inetpeer_addr));
+	// fix maybe-uninitialized error
+	memset(&saddr, 0, sizeof(struct inetpeer_addr));
+	memset(&daddr, 0, sizeof(struct inetpeer_addr));
 
 	if (tw->tw_family == AF_INET) {
 		saddr.family = AF_INET;
@@ -327,9 +327,9 @@ static struct tcp_metrics_block *tcp_get_metrics(struct sock *sk,
 	unsigned int hash;
 	struct net *net;
 
-    // fix maybe-uninitialized error
-    memset(&saddr, 0, sizeof(struct inetpeer_addr));
-    memset(&daddr, 0, sizeof(struct inetpeer_addr));
+	// fix maybe-uninitialized error
+	memset(&saddr, 0, sizeof(struct inetpeer_addr));
+	memset(&daddr, 0, sizeof(struct inetpeer_addr));
 
 	if (sk->sk_family == AF_INET) {
 		saddr.family = AF_INET;
@@ -988,9 +988,9 @@ static int tcp_metrics_nl_cmd_get(struct sk_buff *skb, struct genl_info *info)
 	int ret;
 	bool src = true;
 
-    // fix maybe-uninitialized error
-    memset(&saddr, 0, sizeof(struct inetpeer_addr));
-    memset(&daddr, 0, sizeof(struct inetpeer_addr));
+	// fix maybe-uninitialized error
+	memset(&saddr, 0, sizeof(struct inetpeer_addr));
+	memset(&daddr, 0, sizeof(struct inetpeer_addr));
 
 	ret = parse_nl_addr(info, &daddr, &hash, 0);
 	if (ret < 0)
@@ -1076,9 +1076,9 @@ static int tcp_metrics_nl_cmd_del(struct sk_buff *skb, struct genl_info *info)
 	int ret;
 	bool src = true, found = false;
 
-    // fix maybe-uninitialized error
-    memset(&saddr, 0, sizeof(struct inetpeer_addr));
-    memset(&daddr, 0, sizeof(struct inetpeer_addr));
+	// fix maybe-uninitialized error
+	memset(&saddr, 0, sizeof(struct inetpeer_addr));
+	memset(&daddr, 0, sizeof(struct inetpeer_addr));
 
 	ret = parse_nl_addr(info, &daddr, &hash, 1);
 	if (ret < 0)

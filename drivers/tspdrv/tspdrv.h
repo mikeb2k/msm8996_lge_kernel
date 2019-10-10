@@ -65,7 +65,7 @@
 
 #define VIBE_MAX_DEVICE_NAME_LENGTH         64
 #define SPI_HEADER_SIZE                     3   /* DO NOT CHANGE - SPI buffer header size */
-#define VIBE_OUTPUT_SAMPLE_SIZE             50  /* DO NOT CHANGE - maximum number of samples */
+#define VIBE_OUTPUT_SAMPLE_SIZE             60  /* DO NOT CHANGE - maximum number of samples */
 #define MAX_DEBUG_BUFFER_LENGTH             1024
 
 /* Type definitions */
@@ -87,6 +87,7 @@ typedef VibeInt32	VibeStatus;
 #define DBL_INFO                        3
 #define DBL_VERBOSE                     4
 #define DBL_OVERKILL                    5
+#pragma message "************ __KERNEL__ ************"
 #endif
 
 /* Device parameters sent to the kernel module, tspdrv.ko */
