@@ -125,7 +125,7 @@ fi;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.droidcheck)" == 1 ]; then
   android_version="$(file_getprop /system/build.prop "ro.build.version.release")";
-  supported_version=8.0.0;
+  supported_version=9;
   if [ "$android_version" != "$supported_version" ]; then
     ui_print " ";
     ui_print "You are on $android_version but this kernel is only for $supported_version!";
