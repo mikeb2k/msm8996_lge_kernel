@@ -1,2 +1,3 @@
 include lucye_global_com_common
 include lucye_common-perf
+include marshall_defconfig
