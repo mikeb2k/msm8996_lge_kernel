@@ -100,7 +100,7 @@ THREADS=$((CORES + 4))
 BDATE=$(LC_ALL='en_US.utf8' date '+%b %d %Y')
 
 # directory containing cross-compiler
-GCC_COMP=/home/michael/toolchains/gcc_4_9/bin/aarch64-linux-android-
+GCC_COMP=/home/michael/toolchains/gcc/bin/aarch64-linux-android-
 
 # compiler version
 GCC_VER="$(${GCC_COMP}gcc --version | head -n 1 | cut -f1 -d'~' | \
@@ -116,9 +116,9 @@ ABORT() {
 export CONFIG_NO_ERROR_ON_MISMATCH=y
 export ARCH=arm64
 export KBUILD_COMPILER_STRING=$GCC_VER
-#export KBUILD_BUILD_TIMESTAMP=$BDATE
-#export KBUILD_BUILD_USER=w0lf
-#export KBUILD_BUILD_HOST=MEMEmachine
+export KBUILD_BUILD_TIMESTAMP=$BDATE
+export KBUILD_BUILD_USER=michael
+export KBUILD_BUILD_HOST=MEMEmachine
 export MAKE_MK="Marshall ${VER}"
 if [ "$USE_CCACHE" = "yes" ]; then
   export CROSS_COMPILE="ccache $GCC_COMP"
